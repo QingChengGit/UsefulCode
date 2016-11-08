@@ -1,3 +1,124 @@
 /**
  * Created by qingcheng on 16/11/8.
  */
+/*
+ 二叉查找树（Binary Search Tree），也称有序二叉树（ordered binary tree）,排序二叉树（sorted binary tree），
+ 是指一棵空树或者具有下列性质的二叉树：
+
+ 1. 若任意节点的左子树不空，则左子树上所有结点的键值均小于它的根结点的键值；
+
+ 2. 若任意节点的右子树不空，则右子树上所有结点的键值均大于它的根结点的键值；
+
+ 3. 任意节点的左、右子树也分别为二叉查找树。
+
+ 4. 没有键值相等的节点（no duplicate nodes）
+ */
+
+function Node(key, val) {
+    "use strict";
+    if(!key){
+        throw Error("node's key can not be empty");
+    }
+    this.key = key;
+    this.val = val;
+    this.parent = this.left = this.right = void 0;
+}
+
+function BinaryTree(comparison) {
+    "use strict";
+    this.root = void 0;
+    this.root.parent = void 0;
+    this.comparison = comparison;
+}
+
+BinaryTree.prototype.addNode = function addNode(key, val) {
+    "use strict";
+    var p = new Node(key, val);
+
+    _insertNode(this, p);
+    return p;
+};
+
+BinaryTree.prototype.deleteNode = function deleteNode(key) {
+    "use strict";
+
+};
+
+BinaryTree.prototype.getNodeByKey = function getNodeByKey(key) {
+    "use strict";
+    return _searchByKey(key);
+};
+
+BinaryTree.prototype.init = function init(data) {
+    "use strict";
+    var self = this;
+
+    if(Object.prototype.toString.call(data) === '[object Array]'){
+        data.forEach(function(item, index) {
+            _insertNode(self, self.addNode(item.key, item.val));
+        });
+    }
+};
+
+function _insertNode(tree, node) {
+    "use strict";
+    var p,
+        flag = true;
+
+    if(!tree.root){
+        tree.root = node;
+        return;
+    }
+    p = tree.root;
+    while(p && flag){
+        if(_compare(node.key, p.key, tree.comparison)){
+            //node's key greater than p's key
+            if(!p.right){
+                p.right = node;
+                flag = false;
+            }else{
+                p = p.right;
+            }
+        }else{
+            if(!p.left){
+                p.left = node;
+                flag = false;
+            }else{
+                p = p.left;
+            }
+        }
+    }
+    node.parent = p;
+}
+
+function _searchByKey(tree, key) {
+    "use strict";
+    var p;
+
+    p = tree.root;
+    if((key != '0' && !key) || !p){
+        return null;
+    }
+    while(p){
+        if(p.key === key){
+            return p;
+        }else{
+            if(_compare(key, p.key)){
+                p = p.right;
+            }else{
+                p = p.left;
+            }
+        }
+    }
+    return null;
+}
+
+function _compare(a, b, comparison) {
+    "use strict";
+    // if a > b return true otherwise return false;
+    if(typeof comparison === 'function'){
+        return comparison(a, b);
+    }else{
+        return a > b;
+    }
+}
