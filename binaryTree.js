@@ -41,7 +41,26 @@ BinaryTree.prototype.addNode = function addNode(key, val) {
 
 BinaryTree.prototype.deleteNode = function deleteNode(key) {
     "use strict";
+    var target = this.getNodeByKey(key),
+        chainRoot,
+        chainLeaf,
+        chainOneChild,
+        chainTwoChild;
 
+    if(!target){
+        return null;
+    }
+    chainRoot = new Chain(_deleteRootNode);
+    chainLeaf = new Chain(_deleteLeafNode);
+    chainOneChild = new Chain(_deleteHasOneChildNode);
+    chainTwoChild = new Chain(_deleteHasTwoChildNode);
+
+    chainRoot.setNextProcessor(chainLeaf);
+    chainLeaf.setNextProcessor(chainOneChild);
+    chainOneChild.setNextProcessor(chainTwoChild);
+
+    chainRoot.run(this, target);
+    return target;
 };
 
 BinaryTree.prototype.getNodeByKey = function getNodeByKey(key) {
@@ -122,3 +141,108 @@ function _compare(a, b, comparison) {
         return a > b;
     }
 }
+
+function _deleteRootNode(tree, node) {
+    var successor;
+
+    if(node.parent){
+        return "nextProcess";
+    }
+    if(!node.left && !node.right){
+        tree.root = null;
+    }else if(node.left && node.right){
+        successor = _getSuccessor(node);
+        tree.root = successor;
+        successor.parent = null;
+        successor.left = node.left;
+        successor.right = node.right;
+    }else{
+        tree.root = node.left || node.right;
+        if(node.left){
+            node.left.parent = null;
+        }else{
+            node.right.parent = null;
+        }
+    }
+    node.left = node.right = null;
+}
+
+function _deleteLeafNode(tree, node) {
+    if(node.left || node.right){
+        return "nextProcess";
+    }
+    //node is leaf node
+    if(node.parent.left === node){
+        node.parent.left = null;
+    }else{
+        node.parent.right = null;
+    }
+    node.parent = null;
+}
+
+function _deleteHasOneChildNode(tree, node) {
+    if(node.left && node.right){
+        return "nextProcess";
+    }
+    if(node.parent.left === node){
+        node.parent.left = target.left || target.right;
+        if(node.left){
+            node.left.parent = node.parent;
+            node.left = null;
+        }else{
+            node.right.parent = node.parent;
+            node.right = null;
+        }
+        node.parent = null;
+    }
+}
+
+function _deleteHasTwoChildNode(tree, node) {
+    var successor;
+
+    if(!(node.left && node.right)){
+        return "nextProcess";
+    }
+    successor = _getSuccessor(node);
+    successor.parent = node.parent;
+    successor.left = node.left;
+    successor.right = node.right;
+
+    node.parent = node.left = node.right = null;
+}
+/*
+    获取node节点的后继节点，主要用于删除二叉树中的某个节点有两个子节点的情况
+ */
+function _getSuccessor(node) {
+    var cur = node;
+        p = node.left;
+
+    while(p){
+        p = p.left;
+        cur = cur.left;
+    }
+    return cur;
+}
+
+function Chain(fn){
+    this.fn = fn;
+    this.nextProcessor = null;
+}
+
+Chain.prototype.setNextProcessor = function setNextProcessor(processor) {
+    if(!processor || processor instanceof Chain){
+        this.nextProcessor = processor;
+    }
+};
+
+Chain.prototype.run = function runChain() {
+    var rs,
+        self = this;
+
+    rs = this.fn.apply(self, arguments);
+    if(rs === 'nextProcess'){
+        this.nextProcessor && this.nextProcessor.run.apply(this.nextProcessor, arguments);
+    }
+};
+
+module.exports = BinaryTree;
