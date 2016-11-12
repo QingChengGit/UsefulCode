@@ -16,7 +16,7 @@
 
 function Node(key, val) {
     "use strict";
-    if(!key){
+    if(key != '0' && !key){
         throw Error("node's key can not be empty");
     }
     this.key = key;
@@ -27,14 +27,12 @@ function Node(key, val) {
 function BinaryTree(comparison) {
     "use strict";
     this.root = void 0;
-    this.root.parent = void 0;
     this.comparison = comparison;
 }
 
 BinaryTree.prototype.addNode = function addNode(key, val) {
     "use strict";
     var p = new Node(key, val);
-
     _insertNode(this, p);
     return p;
 };
@@ -65,16 +63,62 @@ BinaryTree.prototype.deleteNode = function deleteNode(key) {
 
 BinaryTree.prototype.getNodeByKey = function getNodeByKey(key) {
     "use strict";
-    return _searchByKey(key);
+    return _searchByKey(this, key);
+};
+
+BinaryTree.prototype.preTravers = function preTravers() {
+    "use strict";
+    //前序遍历
+    var root = this.root,
+        rs = [];
+
+    if(!root){
+        return '';
+    }
+    _preTravers(root, rs);
+
+    return rs.join();
+};
+
+BinaryTree.prototype.middleTravers = function middleTravers() {
+    "use strict";
+    //中序遍历
+    var root = this.root,
+        rs = [];
+
+    if(!root){
+        return '';
+    }
+    _middleTravers(root, rs);
+
+    return rs.join();
+};
+
+BinaryTree.prototype.postTravers = function postTravers() {
+    "use strict";
+    //后序遍历
+    var root = this.root,
+        rs = [];
+
+    if(!root){
+        return '';
+    }
+    _postTravers(root, rs);
+
+    return rs.join();
 };
 
 BinaryTree.prototype.init = function init(data) {
     "use strict";
     var self = this;
-
+    if(typeof data === 'undefined'){
+        _clearTree(self);
+        return;
+    }
     if(Object.prototype.toString.call(data) === '[object Array]'){
+        _clearTree(self);
         data.forEach(function(item, index) {
-            _insertNode(self, self.addNode(item.key, item.val));
+            self.addNode(item.key, item.val);
         });
     }
 };
@@ -142,6 +186,15 @@ function _compare(a, b, comparison) {
     }
 }
 
+function _clearTree(tree) {
+    "use strict";
+    if(tree.root){
+        //clear tree
+        tree.root.left = tree.root.right = null;
+        tree.root = null;
+    }
+}
+
 function _deleteRootNode(tree, node) {
     var successor;
 
@@ -185,7 +238,7 @@ function _deleteHasOneChildNode(tree, node) {
         return "nextProcess";
     }
     if(node.parent.left === node){
-        node.parent.left = target.left || target.right;
+        node.parent.left = node.left || node.right;
         if(node.left){
             node.left.parent = node.parent;
             node.left = null;
@@ -244,5 +297,41 @@ Chain.prototype.run = function runChain() {
         this.nextProcessor && this.nextProcessor.run.apply(this.nextProcessor, arguments);
     }
 };
+
+function _preTravers(node, out) {
+    "use strict";
+    out.push(node.key);
+
+    if(node.left){
+        _preTravers(node.left, out);
+    }
+    if(node.right){
+        _preTravers(node.right, out);
+    }
+}
+
+function _middleTravers(node, out) {
+    "use strict";
+
+    if(node.left){
+        _middleTravers(node.left, out);
+    }
+    out.push(node.key);
+    if(node.right){
+        _middleTravers(node.right, out);
+    }
+}
+
+function _postTravers(node, out) {
+    "use strict";
+
+    if(node.left){
+        _postTravers(node.left, out);
+    }
+    if(node.right){
+        _postTravers(node.right, out);
+    }
+    out.push(node.key);
+}
 
 module.exports = BinaryTree;
