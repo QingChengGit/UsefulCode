@@ -47,3 +47,8 @@ function decorateAfterAsync(fn, afterFn) {
     "use strict";
 
 }
+
+module.exports = {
+    before: decorateBefore,
+    after: decorateAfter
+};
