@@ -3,7 +3,7 @@
  */
 var internalValidMap = {
     "required": function(val) {
-        return val!= 0 && !val;
+        return !!(val == 0 || val);
     },
     "number": function(val) {
         var value = val == 'null' ? '' : val;
@@ -17,6 +17,7 @@ var internalValidMap = {
 
 function Validator(name) {
     this.name = name;
+    this.validTypes = '';
     this.validFns = null;
 }
 
@@ -30,16 +31,18 @@ MiddleValidator.prototype.init = function init() {
         children,
         name,
         valids,
+        validType,
+        validVal,
         validObj,
-        arg,
+        fn,
         self = this;
 
     if(!el){
         throw Error('the element that is being verified can not be null!');
     }
     //compatible greater or equal than IE9
-    children = toArray(el.querySelector('input'));
-    children = children.concat(toArray(el.querySelector('textarea')));
+    children = toArray(el.querySelectorAll('input'));
+    children = children.concat(toArray(el.querySelectorAll('textarea')));
     children.forEach(function(item, index, arr) {
         name = item.getAttribute('name');
         valids = item.getAttribute('validate');
@@ -53,28 +56,52 @@ MiddleValidator.prototype.init = function init() {
             valids = valids.split(',');
             valids.length && (validObj = new Validator(name));
             validObj.validFns = [];
+            validObj.validTypes = [];
             valids.forEach(function(valid) {
-                if(internalValidMap[valid]){
-                    if(valid.split(':')[1]){
-                        arg = validObj.args.push(valid.split(':')[1]);
-                    }
-                    validObj.validFns.push(function() {
-                        internalValidMap[valid](item.value, arg);
-                    });
-                    self.validators.push(validObj);
+                validObj.validTypes.push(valid);
+                valid = valid.split(':');
+                validType = valid[0];
+                validVal = valid[1];
+                if(fn = internalValidMap[validType]){
+                    (function(f, e, val) {
+                        "use strict";
+                        validObj.validFns.push(function() {
+                            return f(e.value, val);
+                        });
+                    })(fn, item, validVal);
                 }
             });
+            validObj.validTypes = validObj.validTypes.join();
+            self.validators.push(validObj);
         }
     });
 };
 
 MiddleValidator.prototype.addValidator = function addValidator(opt) {
     var methodName = opt.name,
-        method = opt.method;
+        method = opt.method,
+        self = this,
+        reg,
+        matchRs,
+        tag;
     if(typeof method !== 'function'){
         throw Error('the method of added validator must be function!');
     }
     internalValidMap[methodName] = method;
+    reg = new RegExp(',?(' + methodName + '(:\w+)?)');
+    self.validators.forEach(function(item) {
+        "use strict";
+        matchRs = item.validTypes.match(reg);
+        if(matchRs && matchRs[1]){
+            tag = document.querySelector('[name="'+ item.name + '"]');
+            (function(e, arg) {
+                item.validFns.push(function() {
+                    return method(e.value, arg);
+                });
+            })(tag, matchRs[2]);
+            tag = null;
+        }
+    });
 };
 
 MiddleValidator.prototype.verify = function verify() {
@@ -97,7 +124,9 @@ MiddleValidator.prototype.verify = function verify() {
             break;
         }
         m++;
+        console.log(m);
     }
+
     return rs;
 };
 
