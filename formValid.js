@@ -71,6 +71,7 @@ MiddleValidator.prototype.init = function init() {
                     })(fn, item, validVal);
                 }
             });
+            fn = null;
             validObj.validTypes = validObj.validTypes.join();
             self.validators.push(validObj);
         }
@@ -93,13 +94,14 @@ MiddleValidator.prototype.addValidator = function addValidator(opt) {
         "use strict";
         matchRs = item.validTypes.match(reg);
         if(matchRs && matchRs[1]){
-            tag = document.querySelector('[name="'+ item.name + '"]');
+            tag = self.el.querySelector('[name="'+ item.name + '"]');
             (function(e, arg) {
                 item.validFns.push(function() {
                     return method(e.value, arg);
                 });
             })(tag, matchRs[2]);
             tag = null;
+            matchRs = null;
         }
     });
 };
@@ -124,7 +126,6 @@ MiddleValidator.prototype.verify = function verify() {
             break;
         }
         m++;
-        console.log(m);
     }
 
     return rs;

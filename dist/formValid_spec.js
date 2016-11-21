@@ -93,7 +93,6 @@
 	        valid.addValidator({
 	            name: 'areaValid',
 	            method: function(val){
-	                console.log(val);
 	                return val.indexOf('AA') > -1;
 	            }
 	        });
@@ -185,6 +184,7 @@
 	                    })(fn, item, validVal);
 	                }
 	            });
+	            fn = null;
 	            validObj.validTypes = validObj.validTypes.join();
 	            self.validators.push(validObj);
 	        }
@@ -207,13 +207,14 @@
 	        "use strict";
 	        matchRs = item.validTypes.match(reg);
 	        if(matchRs && matchRs[1]){
-	            tag = document.querySelector('[name="'+ item.name + '"]');
+	            tag = self.el.querySelector('[name="'+ item.name + '"]');
 	            (function(e, arg) {
 	                item.validFns.push(function() {
 	                    return method(e.value, arg);
 	                });
 	            })(tag, matchRs[2]);
 	            tag = null;
+	            matchRs = null;
 	        }
 	    });
 	};
@@ -238,7 +239,6 @@
 	            break;
 	        }
 	        m++;
-	        console.log(m);
 	    }
 
 	    return rs;

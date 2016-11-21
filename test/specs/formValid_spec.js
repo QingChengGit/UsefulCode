@@ -47,7 +47,6 @@ describe('formValid test', function() {
         valid.addValidator({
             name: 'areaValid',
             method: function(val){
-                console.log(val);
                 return val.indexOf('AA') > -1;
             }
         });
