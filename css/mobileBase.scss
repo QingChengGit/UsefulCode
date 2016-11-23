@@ -1,0 +1,97 @@
+@charset "UTF-8";
+/* 去除安卓高亮边框 */
+* {
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+}
+
+div:focus, a:focus, input:focus {
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+}
+
+div:active, a:active, input:active {
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+}
+/* 去除安卓高亮边框 end */
+/* 滚动不顺时用 */
+.scrolling {
+    -webkit-overflow-scrolling: touch;
+}
+/* 滚动不顺时用 end */
+/* 布局专用 */
+.flex {
+    display: -webkit-box;
+    display: -webkit-flex;
+    display: flex;
+}
+.flex-item {
+    -webkit-box-flex: 1;
+    -webkit-flex: 1;
+    flex: 1;
+}
+.flex-vertical-center {
+    /* flex 盒子内的元素垂直居中 */
+    /* 09版 */
+    -webkit-box-align: center;
+    /* 12版 */
+    -webkit-align-items: center;
+    align-items: center;
+}
+.flex-horizontal-middle {
+    -webkit-justify-content: center;
+    justify-content: center;
+}
+/* 单行加省略号 */
+.single-line-clamp {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    word-break: break-all;
+}
+/* 设置盒子模型为IE盒子模型 */
+.border-box {
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+}
+/* 垂直居中兼容IE8 */
+.v-align {
+    font-size: 0;
+    &::after {
+        content: '';
+        display: inline-block;
+        width: 0;
+        height: 100%;
+        font-size: 0;
+        vertical-align: middle;
+        visibility: hidden;
+    }
+}
+/* 清除浮动 */
+.clear-fix {
+    &::after {
+        content: '';
+        display: block;
+        width: 0;
+        height: 0;
+        font-size: 0;
+        clear: both;
+        visibility: hidden;
+    }
+}
+/* 给按钮添加点击过渡效果 */
+.click-transition {
+    position: relative;
+    &:active {
+        &::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            z-index: 1;
+            width: 100%;
+            height: 100%;
+            background-color: #333;
+            opacity: 0.3;
+        }
+    }
+}
