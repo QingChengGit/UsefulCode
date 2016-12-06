@@ -240,7 +240,10 @@
 	        }
 	        m++;
 	    }
-
+	    if(rs){
+	        //清理内存
+	        this.validators = [];
+	    }
 	    return rs;
 	};
 
