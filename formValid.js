@@ -19,6 +19,7 @@ function Validator(name) {
     this.name = name;
     this.validTypes = '';
     this.validFns = null;
+    this.erMsg = '';
 }
 
 function MiddleValidator(el) {
@@ -35,16 +36,16 @@ MiddleValidator.prototype.init = function init() {
         validVal,
         validObj,
         fn,
+        validFlag = 'valid-name',
         self = this;
 
     if(!el){
         throw Error('the element that is being verified can not be null!');
     }
     //compatible greater or equal than IE9
-    children = toArray(el.querySelectorAll('input'));
-    children = children.concat(toArray(el.querySelectorAll('textarea')));
+    children = toArray(el.querySelectorAll('[' + validFlag + ']'));
     children.forEach(function(item, index, arr) {
-        name = item.getAttribute('name');
+        name = item.getAttribute(validFlag);
         valids = item.getAttribute('validate');
         /*
             use validate property as the validate rules's sign。
@@ -52,9 +53,13 @@ MiddleValidator.prototype.init = function init() {
             for example:
             validate = "required,length:6,email"
          */
-        if(name && valids){
-            valids = valids.split(',');
-            valids.length && (validObj = new Validator(name));
+        if(name && valids!= null){
+            validObj = new Validator(name);
+            valids = valids.split(';');
+            if(valids[1]){
+                validObj.erMsg = valids[1].split(':')[1];
+            }
+            valids = valids[0].split(',');
             validObj.validFns = [];
             validObj.validTypes = [];
             valids.forEach(function(valid) {
@@ -66,7 +71,8 @@ MiddleValidator.prototype.init = function init() {
                     (function(f, e, val) {
                         "use strict";
                         validObj.validFns.push(function() {
-                            return f(e.value, val);
+                            var data = e.value || e.getAttribute('valid-value');
+                            return f(data, val);
                         });
                     })(fn, item, validVal);
                 }
@@ -94,10 +100,11 @@ MiddleValidator.prototype.addValidator = function addValidator(opt) {
         "use strict";
         matchRs = item.validTypes.match(reg);
         if(matchRs && matchRs[1]){
-            tag = self.el.querySelector('[name="'+ item.name + '"]');
+            tag = self.el.querySelector('[valid-name="'+ item.name + '"]');
             (function(e, arg) {
                 item.validFns.push(function() {
-                    return method(e.value, arg);
+                    var data = e.value || e.getAttribute('valid-value');
+                    return method(data, arg);
                 });
             })(tag, matchRs[2]);
             tag = null;
@@ -106,11 +113,12 @@ MiddleValidator.prototype.addValidator = function addValidator(opt) {
     });
 };
 
-MiddleValidator.prototype.verify = function verify() {
+MiddleValidator.prototype.verify = function verify(showAllMsg) {
     var rs = true,
         m = 0,
         n,
-        fns;
+        fns,
+        erMsgs = [];
 
     while(m < this.validators.length){
         n = 0;
@@ -123,15 +131,26 @@ MiddleValidator.prototype.verify = function verify() {
             n++;
         }
         if(!rs){
-            break;
+            erMsgs.push([this.validators[m].name, this.validators[m].erMsg]);
+            if(!showAllMsg){
+                break;
+            }
         }
+        //if showAllMsg is true and previous validator vaildFns result is false
+        //at this case if current validator validFns.length is 0,then it's erMsg
+        //will bell push erMsgs arry!so we need do this.
+        rs = true;
         m++;
     }
+    erMsgs.length && (rs = false);
     if(rs){
-        //清理内存
+        //清理内存,测试时需去掉
         this.validators = [];
     }
-    return rs;
+    return {
+        isValid: rs,
+        erMsg: erMsgs
+    };
 };
 
 function toArray(likeArr) {
