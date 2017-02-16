@@ -52,6 +52,31 @@ function insertSort(arr, isDESC){
     return rs;
 }
 
+function _insertSort(arr) {
+    var rs = [],
+        l = arr.length,
+        i = 0,
+        j;
+
+    for(i;i < l;i++){
+        rs.push(arr[i]);
+        for(j = rs.length - 2;j >= 0;j--){
+            if(rs[j] > arr[i]){
+                //不需要交互两数据只需要把当前比待插入的数据往后挪就行
+                rs[j + 1] = rs[j];
+                if(j === 0){
+                    rs[j] = arr[i];
+                }
+            }else{
+                rs[j + 1] = arr[i];
+                break;
+            }
+        }
+    }
+
+    return rs;
+}
+
 /*
     交换数组中第i个位置和第j个位置的数据
  */
@@ -63,5 +88,7 @@ function _swap(arr, i, j){
     arr[i] = arr[j];
     arr[j] = tmp;
 }
+//test
+console.log(_insertSort([2, 8, 4, 12, 1, 3, 5, 22, 9, 26, 18, 7, 11, 13, 25, 6, 19, 88, 39]));
 
 module.exports = insertSort;
